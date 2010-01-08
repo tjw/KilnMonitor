@@ -1,0 +1,29 @@
+// The kiln digits can look green to bright yellow.
+
+kernel vec4 detectGreen(sampler image)
+{
+	vec4 src = sample(image, samplerCoord(image));
+	
+	// Check if the color is saturated to some extent. The distance between the maximum and minimum components should be above some threshold
+	float min_c = min(src.r, min(src.g, src.b));
+	float max_c = max(src.r, max(src.g, src.b));
+	float satOK = max_c - min_c > 0.2 ? 1.0 : 0.0;
+//	return vec4(satOK, satOK, satOK, 1.0);
+	
+//	float lowBlue = sourceRGB.b < 0.5 ? 1.0 : 0.0;
+	float moreGreenThanRed = src.g - src.r > 0.00 ? 1.0 : 0.0;
+	
+	float moreRedThanBlue = src.r - src.b > 0.0 ? 1.0 : 0.0;
+	
+	float match = satOK * moreGreenThanRed * moreRedThanBlue;
+	
+//	float match = lowBlue * moreGreenThanRed;
+	return vec4(match, match, match, 1.0);
+//	return vec4(0.0, moreGreenThanRed, lowBlue, 1.0);
+//	return vec4(lowBlue, 0.0, 0.0, 1.0);
+
+//	return vec4(lowBlue * moreGreenThanRed, 0.0, 0.0, 1.0);
+//	float match = sourceRGB.g - sourceRGB.r > 0.05 ? 1.0 : 0.0;
+//	return vec4(match, match, match, 1.0);
+//	return vec4(sourceRGB.g, sourceRGB.g, sourceRGB.g, 1.0);
+}
