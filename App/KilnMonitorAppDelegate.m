@@ -8,6 +8,8 @@
 
 #import "KilnMonitorAppDelegate.h"
 
+#import "ImageView.h"
+
 static NSString * const AvailableCaptureDevicesBinding = @"availableCaptureDevices";
 static NSString * const SelectedCaptureDeviceBinding = @"selectedCaptureDevice";
 static NSString * const CapturedImageBinding = @"capturedImage";
@@ -16,8 +18,7 @@ static NSString * const ResultImageBinding = @"resultImage";
 @interface KilnMonitorAppDelegate (/*Private*/)
 @property(copy) NSArray *availableCaptureDevices;
 @property(retain,nonatomic) QTCaptureDevice *selectedCaptureDevice;
-@property(retain) CIImage *capturedImage;
-- (NSImage *)_newResultImage;
+- (CGImageRef)_makeResultImage:(CIImage *)sourceImage;
 @end
 
 @implementation KilnMonitorAppDelegate
@@ -43,25 +44,7 @@ static NSString * const ResultImageBinding = @"resultImage";
 }
 
 @synthesize window = _window;
-@synthesize sourceImage = _sourceImage;
-@synthesize sourceImageView = _sourceImageView;
 @synthesize resultImageView = _resultImageView;
-@synthesize capturedImage = _capturedImage;
-@synthesize resultImage = _resultImage;
-
-// Making -resultImage be derived property crashes in NSImageView with a zombie; maybe it calls the accessor w/in an NSAutoreleasePool, not expecting it to go away.
-- (void)setCapturedImage:(CIImage *)capturedImage;
-{
-    if (_capturedImage == capturedImage)
-        return;
-    
-    [self willChangeValueForKey:ResultImageBinding];
-    [_capturedImage release];
-    _capturedImage = [capturedImage retain];
-    [_resultImage release];
-    _resultImage = [self _newResultImage];
-    [self didChangeValueForKey:ResultImageBinding];
-}
 
 @synthesize availableCaptureDevices = _availableCaptureDevices;
 @synthesize captureDeviceArrayController = _captureDeviceArrayController;
@@ -71,6 +54,17 @@ static NSString * const ResultImageBinding = @"resultImage";
 {
     if (_selectedCaptureDevice == device)
         return;
+
+    NSLog(@"device.uniqueID = %@", device.uniqueID);
+    NSLog(@"device.modelUniqueID = %@", device.modelUniqueID);
+    NSLog(@"device.localizedDisplayName = %@", device.localizedDisplayName);
+    NSLog(@"device.deviceAttributes = %@", device.deviceAttributes);
+
+    for (QTFormatDescription *desc in device.formatDescriptions) {
+        NSLog(@"format %@ %@", [desc mediaType], [desc localizedFormatSummary]);
+        NSLog(@"%@", [desc formatDescriptionAttributes]);
+    }
+
 
     // close any open session and stop using the device.
     [[_captureView captureSession] stopRunning];
@@ -122,27 +116,32 @@ static NSString * const ResultImageBinding = @"resultImage";
 
 - (CIImage *)view:(QTCaptureView *)view willDisplayImage:(CIImage *)image;
 {
-    self.capturedImage = image;
+    CGImageRef filteredImage = [self _makeResultImage:image];
+    // This is called in a background thread. Don't poke the view system from back here.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        _resultImageView.image = filteredImage;
+        CGImageRelease(filteredImage);
+    });
     return nil; // use the passed in image
 }
 
 #pragma mark -
 #pragma mark Private
 
-- (NSImage *)_newResultImage;
+- (CGImageRef)_makeResultImage:(CIImage *)sourceImage;
 {
-    if (!_capturedImage)
+    if (!sourceImage)
         return nil;
     
 #if 0
     CIImage *sourceCIImage;
     {
-        CGImageRef sourceImageRef = [_sourceImage CGImageForProposedRect:NULL context:[window graphicsContext] hints:nil];
+        CGImageRef sourceImageRef = [_sourceImage CGImageForProposedRect:NULL context:[_window graphicsContext] hints:nil];
         sourceCIImage = [[[CIImage alloc] initWithCGImage:sourceImageRef] autorelease];
         CGImageRelease(sourceImageRef);
     }
 #endif
-    //    CIImage *sourceCIImage = _capturedImage;
+    //    CIImage *sourceCIImage = sourceImage;
     
     CIImage *resultCIImage;
     {
@@ -150,7 +149,7 @@ static NSString * const ResultImageBinding = @"resultImage";
         [blurFilter setDefaults];
         
         [blurFilter setValue:[NSNumber numberWithDouble:8.0f] forKey:@"inputRadius"];
-        [blurFilter setValue:_capturedImage forKey:@"inputImage"];
+        [blurFilter setValue:sourceImage forKey:@"inputImage"];
         
         CIImage *blurImage = [blurFilter valueForKey:@"outputImage"];
         
@@ -163,17 +162,30 @@ static NSString * const ResultImageBinding = @"resultImage";
         
         resultCIImage = greenDetectImage;
     }
-    
-    NSImage *resultImage;
+
     {
+        // The resultCIImage is a recipe for how to build the image, and if we stick this in the actual result NSImage (via NSCIImage), we get an error when drawing it.  My guess is that some portion of the recipe has been invalidated by the time this happens (some CoreVideo buffer maybe, based on where I hit the CG error).
+        // So, flatten the image immediately. Probably non-optimal, possibly a bug in CI/QT/CV/CG somewhere.
+
+#if 0        
         NSCIImageRep *ciImageRep = [[NSCIImageRep alloc] initWithCIImage:resultCIImage];
         
         resultImage = [[NSImage alloc] initWithSize:[ciImageRep size]]; // LEAK
         [resultImage addRepresentation:ciImageRep];
         [ciImageRep release];
+#endif
+        
+        CIContext *ciContext = [CIContext contextWithCGContext:[[_window graphicsContext] graphicsPort] options:nil];
+        CGRect sourceRect = [resultCIImage extent];
+        CGImageRef resultCGImage = [ciContext createCGImage:resultCIImage fromRect:sourceRect];
+        
+        return resultCGImage;
+//        CIImage *resultImage = [CIImage imageWithCGImage:resultCGImage];
+//        CGImageRelease(resultCGImage);
+        
+        //NSLog(@"resultImage = %@", resultImage);
+//        return resultImage;
     }
-    
-    return resultImage;
 }
 
 @end

@@ -13,6 +13,7 @@
 		34EFFCB610F7E2790049D929 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34EFFCB510F7E2790049D929 /* Quartz.framework */; };
 		34EFFCB810F7E2790049D929 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34EFFCB710F7E2790049D929 /* QuartzCore.framework */; };
 		34EFFCD610F7E4750049D929 /* DetectByGreen.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = 34EFFCD510F7E4750049D929 /* DetectByGreen.cikernel */; };
+		34F0D09110F8598B003FCD7C /* ImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F0D09010F8598B003FCD7C /* ImageView.m */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
@@ -33,6 +34,8 @@
 		34EFFCB510F7E2790049D929 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = /System/Library/Frameworks/Quartz.framework; sourceTree = "<absolute>"; };
 		34EFFCB710F7E2790049D929 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = /System/Library/Frameworks/QuartzCore.framework; sourceTree = "<absolute>"; };
 		34EFFCD510F7E4750049D929 /* DetectByGreen.cikernel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = DetectByGreen.cikernel; sourceTree = "<group>"; };
+		34F0D08F10F8598B003FCD7C /* ImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageView.h; sourceTree = "<group>"; };
+		34F0D09010F8598B003FCD7C /* ImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageView.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* KilnMonitor-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "KilnMonitor-Info.plist"; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* KilnMonitor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KilnMonitor.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -57,6 +60,8 @@
 			children = (
 				256AC3D80F4B6AC300CF3369 /* KilnMonitorAppDelegate.h */,
 				256AC3D90F4B6AC300CF3369 /* KilnMonitorAppDelegate.m */,
+				34F0D08F10F8598B003FCD7C /* ImageView.h */,
+				34F0D09010F8598B003FCD7C /* ImageView.m */,
 				34EFFCD510F7E4750049D929 /* DetectByGreen.cikernel */,
 			);
 			name = Classes;
@@ -189,6 +194,7 @@
 			files = (
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
 				256AC3DA0F4B6AC300CF3369 /* KilnMonitorAppDelegate.m in Sources */,
+				34F0D09110F8598B003FCD7C /* ImageView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
