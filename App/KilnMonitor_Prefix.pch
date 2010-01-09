@@ -4,3 +4,4 @@
 
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/QuartzCore.h>
+#import <QTKit/QTKit.h>
