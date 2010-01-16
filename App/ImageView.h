@@ -12,11 +12,11 @@
 @interface ImageView : NSView
 {
 @private
-    CGImageRef _image;
+    CIImage *_image;
 }
 
-//@property(retain,nonatomic) CIImage *image;
-- (CGImageRef)image;
-- (void)setImage:(CGImageRef)image;
+@property(retain,nonatomic) CIImage *image;
+//- (CGImageRef)image;
+//- (void)setImage:(CGImageRef)image;
 
 @end

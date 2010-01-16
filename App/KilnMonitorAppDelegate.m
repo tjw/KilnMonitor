@@ -74,11 +74,12 @@ static NSString * const ResultImageBinding = @"resultImage";
 
 - (void)_receivedInputImage:(CIImage *)image;
 {
-    CGImageRef filteredImage = [self _makeResultImage:image];
+    CGImageRef filteredImageRef = [self _makeResultImage:image];
     // This is called in a background thread. Don't poke the view system from back here.
     dispatch_async(dispatch_get_main_queue(), ^{
+        CIImage *filteredImage = [[CIImage alloc] initWithCGImage:filteredImageRef];
         _resultImageView.image = filteredImage;
-        CGImageRelease(filteredImage);
+        [filteredImage release];
     });
 }
 

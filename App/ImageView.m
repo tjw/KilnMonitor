@@ -13,7 +13,8 @@
 
 - (void)dealloc;
 {
-    CGImageRelease(_image);
+    [_image release];
+//    CGImageRelease(_image);
     [super dealloc];
 }
 
@@ -25,9 +26,12 @@
         return;
     }
 
+#if 0
     CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
     CGContextDrawImage(ctx, [self bounds], _image);
-#if 0
+#endif
+    
+#if 1
     CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
     CIContext *ciCtx = [CIContext contextWithCGContext:ctx options:nil];
     [ciCtx drawImage:_image inRect:[self bounds] fromRect:[_image extent]];
@@ -39,6 +43,18 @@
 #endif
 }
 
+@synthesize image = _image;
+- (void)setImage:(CIImage *)image;
+{
+    if (_image == image)
+        return;
+    
+    [_image release];
+    _image = [image retain];
+    [self setNeedsDisplay:YES];
+}
+
+#if 0
 - (CGImageRef)image;
 {
     return _image;
@@ -54,5 +70,6 @@
     _image = image;
     [self setNeedsDisplay:YES];
 }
+#endif
 
 @end
