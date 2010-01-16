@@ -13,6 +13,7 @@
 static NSString * const ResultImageBinding = @"resultImage";
 
 @interface KilnMonitorAppDelegate (/*Private*/)
+- (void)_receivedInputImage:(CIImage *)image;
 - (CGImageRef)_makeResultImage:(CIImage *)sourceImage;
 @end
 
@@ -36,7 +37,32 @@ static NSString * const ResultImageBinding = @"resultImage";
 }
 
 @synthesize window = _window;
+@synthesize inputImageView = _inputImageView;
 @synthesize resultImageView = _resultImageView;
+
+@synthesize inputImage = _inputImage;
+- (void)setInputImage:(NSImage *)inputImage;
+{
+    if (_inputImage == inputImage)
+        return;
+    
+    [_inputImage release];
+    _inputImage = [inputImage copy];
+    
+    NSLog(@"_inputImage = %@", _inputImage);
+    
+    CIImage *ciInputImage = nil;
+    if (_inputImage) {
+        CGImageRef inputImageRef = [_inputImage CGImageForProposedRect:NULL context:[_window graphicsContext] hints:nil];
+        if (inputImageRef)
+            ciInputImage = [[CIImage alloc] initWithCGImage:inputImageRef];
+    }
+    [self _receivedInputImage:ciInputImage];
+    [ciInputImage release];
+}
+
+#pragma mark -
+#pragma mark Private
 
 - (void)_receivedInputImage:(CIImage *)image;
 {
@@ -46,11 +72,7 @@ static NSString * const ResultImageBinding = @"resultImage";
         _resultImageView.image = filteredImage;
         CGImageRelease(filteredImage);
     });
-    return nil; // use the passed in image
 }
-
-#pragma mark -
-#pragma mark Private
 
 - (CGImageRef)_makeResultImage:(CIImage *)sourceImage;
 {

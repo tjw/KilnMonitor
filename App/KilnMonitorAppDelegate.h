@@ -15,10 +15,17 @@
     
     CIKernel *_detectByGreenKernel;
     
+    NSImageView *_inputImageView;
+    NSImage *_inputImage;
+    
     ImageView *_resultImageView;
 }
 
 @property (assign) IBOutlet NSWindow *window;
+
+@property (retain) IBOutlet NSImageView *inputImageView;
+@property (copy) NSImage *inputImage;
+
 @property (retain) IBOutlet ImageView *resultImageView;
 
 @end
