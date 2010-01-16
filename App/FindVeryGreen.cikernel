@@ -1,0 +1,15 @@
+// Helper to find the area of the image that is very recognizably green.
+// This will drop pixels that are very bright nearly white, which can happen under bright lighting with the wifi webcam.
+kernel vec4 main(sampler image)
+{
+	vec4 src = sample(image, samplerCoord(image));
+	
+	float min_c = min(src.r, min(src.g, src.b));
+	float max_c = max(src.r, max(src.g, src.b));
+	
+	float satOK = max_c - min_c > 0.5 ? 1.0 : 0.0;
+	float greenOK = src.g > 0.5 * (max_c + min_c) ? 1.0 : 0.0;
+	
+	float match = satOK * greenOK;
+	return vec4(match, match, match, 1.0);
+}

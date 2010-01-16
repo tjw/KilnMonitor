@@ -13,6 +13,7 @@
 @interface KilnMonitorAppDelegate : NSObject <NSApplicationDelegate> {
     NSWindow *_window;
     
+    CIKernel *_findVeryGreenKernel;
     CIKernel *_detectByGreenKernel;
     
     NSImageView *_inputImageView;

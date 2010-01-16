@@ -13,6 +13,7 @@
 static NSString * const ResultImageBinding = @"resultImage";
 
 @interface KilnMonitorAppDelegate (/*Private*/)
+- (CIKernel *)_loadKernel:(NSString *)name;
 - (void)_receivedInputImage:(CIImage *)image;
 - (CGImageRef)_makeResultImage:(CIImage *)sourceImage;
 @end
@@ -21,19 +22,8 @@ static NSString * const ResultImageBinding = @"resultImage";
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification;
 {
-    NSString *kernelPath = [[NSBundle mainBundle] pathForResource:@"DetectByGreen" ofType:@"cikernel"];
-    NSAssert(kernelPath != nil, @"Kernel source file not found");
-
-    NSError *error = nil;
-    NSString *kernelSource = [NSString stringWithContentsOfFile:kernelPath encoding:NSUTF8StringEncoding error:&error];
-    if (!kernelSource)
-        [NSApp presentError:error];
-    else {
-        NSArray *kernels = [CIKernel kernelsWithString:kernelSource];
-        NSAssert([kernels count] == 1, @"Expected exactly one kernel.");
-        
-        _detectByGreenKernel = [[kernels lastObject] retain];
-    }
+    _findVeryGreenKernel = [[self _loadKernel:@"FindVeryGreen"] retain];
+    _detectByGreenKernel = [[self _loadKernel:@"DetectByGreen"] retain];
 }
 
 @synthesize window = _window;
@@ -64,6 +54,24 @@ static NSString * const ResultImageBinding = @"resultImage";
 #pragma mark -
 #pragma mark Private
 
+- (CIKernel *)_loadKernel:(NSString *)name;
+{
+    NSString *kernelPath = [[NSBundle mainBundle] pathForResource:name ofType:@"cikernel"];
+    NSAssert(kernelPath != nil, @"Kernel source file not found");
+    
+    NSError *error = nil;
+    NSString *kernelSource = [NSString stringWithContentsOfFile:kernelPath encoding:NSUTF8StringEncoding error:&error];
+    if (!kernelSource) {
+        [NSApp presentError:error];
+        return nil;
+    } else {
+        NSArray *kernels = [CIKernel kernelsWithString:kernelSource];
+        NSAssert([kernels count] == 1, @"Expected exactly one kernel.");
+        
+        return [kernels lastObject];
+    }
+}
+
 - (void)_receivedInputImage:(CIImage *)image;
 {
     CGImageRef filteredImage = [self _makeResultImage:image];
@@ -91,17 +99,17 @@ static NSString * const ResultImageBinding = @"resultImage";
     
     CIImage *resultCIImage;
     {
-        CIFilter *blurFilter = [CIFilter filterWithName:@"CIBoxBlur"];
-        [blurFilter setDefaults];
+//        CIFilter *blurFilter = [CIFilter filterWithName:@"CIBoxBlur"];
+//        [blurFilter setDefaults];
         
-        [blurFilter setValue:[NSNumber numberWithDouble:8.0f] forKey:@"inputRadius"];
-        [blurFilter setValue:sourceImage forKey:@"inputImage"];
+//        [blurFilter setValue:[NSNumber numberWithDouble:8.0f] forKey:@"inputRadius"];
+//        [blurFilter setValue:sourceImage forKey:@"inputImage"];
         
-        CIImage *blurImage = [blurFilter valueForKey:@"outputImage"];
+//        CIImage *blurImage = [blurFilter valueForKey:@"outputImage"];
         
         CIFilter *detectGreenFilter = [[CIFilter alloc] init];
-        CISampler *blurSampler = [CISampler samplerWithImage:blurImage];
-        CIImage *greenDetectImage = [detectGreenFilter apply:_detectByGreenKernel, blurSampler, kCIApplyOptionDefinition, [blurImage definition], nil];
+        CISampler *blurSampler = [CISampler samplerWithImage:sourceImage];
+        CIImage *greenDetectImage = [detectGreenFilter apply:_findVeryGreenKernel, blurSampler, kCIApplyOptionDefinition, [sourceImage definition], nil];
         
         //NSLog(@"greenDetectImage = %@", greenDetectImage);
         [detectGreenFilter release];

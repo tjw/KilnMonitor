@@ -63,9 +63,9 @@
       <print-info-key name="OOScaleDocumentToFitPageWidth" type="boolean">true</print-info-key>
     </print-info>
   </settings>
-  <editor content-size="{785, 742}" is-spellchecking-enabled="yes">
+  <editor content-size="{891, 907}" is-spellchecking-enabled="yes">
     <drawer palette-height="167"/>
-    <selected-rows ids="aTAmLyN45JU"/>
+    <selected-rows ids="jeQj-X-9hl5"/>
   </editor>
   <columns>
     <column id="dTpN3JwYpBn" type="text" width="18" minimum-width="18" maximum-width="18" text-export-width="1" is-note-column="yes">
@@ -82,7 +82,7 @@
         </text>
       </title>
     </column>
-    <column id="jFqHUGd_Dg1" type="text" width="749" minimum-width="13" maximum-width="1000000" text-export-width="72" is-outline-column="yes">
+    <column id="jFqHUGd_Dg1" type="text" width="855" minimum-width="13" maximum-width="1000000" text-export-width="72" is-outline-column="yes">
       <title>
         <text>
           <p>
@@ -155,6 +155,30 @@
               </p>
             </text>
           </values>
+        </item>
+        <item id="mmSZlbhPb8R" expanded="yes">
+          <values>
+            <text>
+              <p>
+                <run>
+                  <lit>Update: With the wifi cam under bright lighting, we can get pixels that are more blue than red.</lit>
+                </run>
+              </p>
+            </text>
+          </values>
+          <children>
+            <item id="jeQj-X-9hl5">
+              <values>
+                <text>
+                  <p>
+                    <run>
+                      <lit>First pass: Do a very-green detection and don&apos;t worry about dropping pixels. Once we&apos;ve found this green area, we can expand out from it looking for pixels that are brighter than some threshold (not part of the black background) with a lower or different criteria for &quot;greenness&quot; that allows white but not red.</lit>
+                    </run>
+                  </p>
+                </text>
+              </values>
+            </item>
+          </children>
         </item>
         <item id="j3Az9C35lJ9" expanded="yes">
           <values>
