@@ -15,18 +15,10 @@
     
     CIKernel *_detectByGreenKernel;
     
-    NSArray *_availableCaptureDevices;
-    QTCaptureDevice *_selectedCaptureDevice;
-    NSArrayController *_captureDeviceArrayController;
-    QTCaptureView *_captureView;
-
     ImageView *_resultImageView;
 }
 
 @property (assign) IBOutlet NSWindow *window;
 @property (retain) IBOutlet ImageView *resultImageView;
-
-@property (retain) IBOutlet NSArrayController *captureDeviceArrayController;
-@property (retain) IBOutlet QTCaptureView *captureView;
 
 @end

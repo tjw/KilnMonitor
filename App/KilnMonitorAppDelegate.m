@@ -10,14 +10,9 @@
 
 #import "ImageView.h"
 
-static NSString * const AvailableCaptureDevicesBinding = @"availableCaptureDevices";
-static NSString * const SelectedCaptureDeviceBinding = @"selectedCaptureDevice";
-static NSString * const CapturedImageBinding = @"capturedImage";
 static NSString * const ResultImageBinding = @"resultImage";
 
 @interface KilnMonitorAppDelegate (/*Private*/)
-@property(copy) NSArray *availableCaptureDevices;
-@property(retain,nonatomic) QTCaptureDevice *selectedCaptureDevice;
 - (CGImageRef)_makeResultImage:(CIImage *)sourceImage;
 @end
 
@@ -38,83 +33,12 @@ static NSString * const ResultImageBinding = @"resultImage";
         
         _detectByGreenKernel = [[kernels lastObject] retain];
     }
-    
-    self.availableCaptureDevices = [[QTCaptureDevice inputDevicesWithMediaType:QTMediaTypeVideo] retain];
-    NSLog(@"_availableCaptureDevices = %@", _availableCaptureDevices);
 }
 
 @synthesize window = _window;
 @synthesize resultImageView = _resultImageView;
 
-@synthesize availableCaptureDevices = _availableCaptureDevices;
-@synthesize captureDeviceArrayController = _captureDeviceArrayController;
-
-@synthesize selectedCaptureDevice = _selectedCaptureDevice;
-- (void)setSelectedCaptureDevice:(QTCaptureDevice *)device;
-{
-    if (_selectedCaptureDevice == device)
-        return;
-
-    NSLog(@"device.uniqueID = %@", device.uniqueID);
-    NSLog(@"device.modelUniqueID = %@", device.modelUniqueID);
-    NSLog(@"device.localizedDisplayName = %@", device.localizedDisplayName);
-    NSLog(@"device.deviceAttributes = %@", device.deviceAttributes);
-
-    for (QTFormatDescription *desc in device.formatDescriptions) {
-        NSLog(@"format %@ %@", [desc mediaType], [desc localizedFormatSummary]);
-        NSLog(@"%@", [desc formatDescriptionAttributes]);
-    }
-
-
-    // close any open session and stop using the device.
-    [[_captureView captureSession] stopRunning];
-    [_selectedCaptureDevice close];
-    
-    [self willChangeValueForKey:SelectedCaptureDeviceBinding];
-    [_selectedCaptureDevice release];
-    _selectedCaptureDevice = [device retain];
-    [self didChangeValueForKey:SelectedCaptureDeviceBinding];
-    
-    NSLog(@"_selectedCaptureDevice = %p %@", _selectedCaptureDevice);
-    
-    NSLog(@"captureView.session = %@", [_captureView captureSession]);
-    NSLog(@"captureView.availableVideoPreviewConnections = %@", [_captureView availableVideoPreviewConnections]);
-    
-    QTCaptureSession *captureSession = nil;
-    
-    if (_selectedCaptureDevice) {
-        NSError *error = nil;
-
-        if (![_selectedCaptureDevice open:&error]) {
-            NSLog(@"Unable to open device %@", error);
-            return;
-        }
-        NSLog(@"opened");
-        
-        captureSession = [[[QTCaptureSession alloc] init] autorelease];
-        QTCaptureDeviceInput *captureVideoDeviceInput = [[[QTCaptureDeviceInput alloc] initWithDevice:_selectedCaptureDevice] autorelease];
-        
-        if (![captureSession addInput:captureVideoDeviceInput error:&error]) {
-            NSLog(@"error adding input %@", error);
-            return;
-        }
-        NSLog(@"input added");
-    }
-    
-    [_captureView setCaptureSession:captureSession];
-    
-    if (captureSession) {
-        [captureSession startRunning];
-        NSLog(@"started");
-    }
-}
-
-@synthesize captureView = _captureView;
-
-#pragma mark -
-#pragma mark QTCaptureView delegate
-
-- (CIImage *)view:(QTCaptureView *)view willDisplayImage:(CIImage *)image;
+- (void)_receivedInputImage:(CIImage *)image;
 {
     CGImageRef filteredImage = [self _makeResultImage:image];
     // This is called in a background thread. Don't poke the view system from back here.
