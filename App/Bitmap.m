@@ -42,3 +42,35 @@ void BitmapDestroy(Bitmap *bitmap)
     free(bitmap);
 }
 
+CGImageRef BitmapCopyImage(Bitmap *bitmap)
+{
+    CGDataProviderRef provider = CGDataProviderCreateWithData(NULL/*info*/,
+                                                              bitmap->pixels, sizeof(*bitmap->pixels) * bitmap->width * bitmap->height,
+                                                              NULL /*releaseData*/);
+    
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGBLinear);
+    CGImageRef image = CGImageCreate(bitmap->width, bitmap->height,
+                                     8/*bitsPerComponent*/, 32/*bitsPerPixel*/, 4*bitmap->width/*bytesPerRow*/,
+                                     colorSpace, kCGImageAlphaPremultipliedFirst, provider,
+                                     NULL/*decode*/, false/*shouldInterpolate*/,
+                                     kCGRenderingIntentDefault);
+    CGColorSpaceRelease(colorSpace);
+    
+    return image;
+}
+
+BOOL BitmapWritePNG(Bitmap *bitmap, NSURL *url)
+{
+    CGImageRef imageRef = BitmapCopyImage(bitmap);
+    
+    CGImageDestinationRef dest = CGImageDestinationCreateWithURL((CFURLRef)url, kUTTypePNG, 1, NULL);
+    if (!dest)
+	return NO;
+    
+    CGImageDestinationAddImage(dest, imageRef, NULL);
+    CFRelease(imageRef);
+    
+    BOOL result = CGImageDestinationFinalize(dest) ? YES : NO; // bool -> BOOL, just in case.
+    CFRelease(dest);
+    return result;
+}

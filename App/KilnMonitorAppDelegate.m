@@ -100,6 +100,7 @@ static NSString * const ResultImageBinding = @"resultImage";
 
     {
         Bitmap *bitmap = BitmapCreateWithCIImage(resultCIImage);
+        BitmapWritePNG(bitmap, [NSURL fileURLWithPath:@"/tmp/foo.png"]);
         BitmapDestroy(bitmap);
     }
     
