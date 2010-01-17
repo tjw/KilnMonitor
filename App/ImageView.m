@@ -14,7 +14,6 @@
 - (void)dealloc;
 {
     [_image release];
-//    CGImageRelease(_image);
     [super dealloc];
 }
 
@@ -26,21 +25,21 @@
         return;
     }
 
-#if 0
-    CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
-    CGContextDrawImage(ctx, [self bounds], _image);
-#endif
+    NSRect bounds = [self bounds];
+    NSRect extent = [_image extent];
     
-#if 1
+    // Scale to fit the bounds and preserve the aspect ratio
+    CGFloat scale = MIN(NSWidth(bounds)/NSWidth(extent), NSHeight(bounds)/NSHeight(extent));
+
+    NSRect destRect;
+    destRect.size.width = scale * NSWidth(extent);
+    destRect.size.height = scale * NSHeight(extent);
+    destRect.origin.x = (NSWidth(bounds) - destRect.size.width)/2.0;
+    destRect.origin.y = (NSHeight(bounds) - destRect.size.height)/2.0;
+
     CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
     CIContext *ciCtx = [CIContext contextWithCGContext:ctx options:nil];
-    [ciCtx drawImage:_image inRect:[self bounds] fromRect:[_image extent]];
-#endif
-    
-#if 0
-    NSSize size = [_image size];
-    [_image drawInRect:[self bounds] fromRect:NSMakeRect(0, 0, size.width, size.height) operation:NSCompositeSourceOver fraction:1.0];
-#endif
+    [ciCtx drawImage:_image inRect:destRect fromRect:extent];
 }
 
 @synthesize image = _image;
@@ -53,23 +52,5 @@
     _image = [image retain];
     [self setNeedsDisplay:YES];
 }
-
-#if 0
-- (CGImageRef)image;
-{
-    return _image;
-}
-- (void)setImage:(CGImageRef)image;
-{
-//    NSLog(@"setting image %@", image);
-    if (_image == image)
-        return;
-    
-    CGImageRelease(_image);
-    CFRetain(image);
-    _image = image;
-    [self setNeedsDisplay:YES];
-}
-#endif
 
 @end
