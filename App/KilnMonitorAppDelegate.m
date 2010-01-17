@@ -9,13 +9,14 @@
 #import "KilnMonitorAppDelegate.h"
 
 #import "ImageView.h"
+#import "Bitmap.h"
 
 static NSString * const ResultImageBinding = @"resultImage";
 
 @interface KilnMonitorAppDelegate (/*Private*/)
 - (CIKernel *)_loadKernel:(NSString *)name;
 - (void)_receivedInputImage:(CIImage *)image;
-- (CGImageRef)_makeResultImage:(CIImage *)sourceImage;
+- (CIImage *)_makeResultImage:(CIImage *)sourceImage;
 @end
 
 @implementation KilnMonitorAppDelegate
@@ -74,73 +75,35 @@ static NSString * const ResultImageBinding = @"resultImage";
 
 - (void)_receivedInputImage:(CIImage *)image;
 {
-    CGImageRef filteredImageRef = [self _makeResultImage:image];
+    CIImage *filteredImage = [self _makeResultImage:image];
     // This is called in a background thread. Don't poke the view system from back here.
     dispatch_async(dispatch_get_main_queue(), ^{
-        CIImage *filteredImage = [[CIImage alloc] initWithCGImage:filteredImageRef];
         _resultImageView.image = filteredImage;
-        [filteredImage release];
     });
 }
 
-- (CGImageRef)_makeResultImage:(CIImage *)sourceImage;
+- (CIImage *)_makeResultImage:(CIImage *)sourceImage;
 {
     if (!sourceImage)
         return nil;
     
-#if 0
-    CIImage *sourceCIImage;
-    {
-        CGImageRef sourceImageRef = [_sourceImage CGImageForProposedRect:NULL context:[_window graphicsContext] hints:nil];
-        sourceCIImage = [[[CIImage alloc] initWithCGImage:sourceImageRef] autorelease];
-        CGImageRelease(sourceImageRef);
-    }
-#endif
-    //    CIImage *sourceCIImage = sourceImage;
-    
     CIImage *resultCIImage;
     {
-//        CIFilter *blurFilter = [CIFilter filterWithName:@"CIBoxBlur"];
-//        [blurFilter setDefaults];
-        
-//        [blurFilter setValue:[NSNumber numberWithDouble:8.0f] forKey:@"inputRadius"];
-//        [blurFilter setValue:sourceImage forKey:@"inputImage"];
-        
-//        CIImage *blurImage = [blurFilter valueForKey:@"outputImage"];
-        
         CIFilter *detectGreenFilter = [[CIFilter alloc] init];
-        CISampler *blurSampler = [CISampler samplerWithImage:sourceImage];
-        CIImage *greenDetectImage = [detectGreenFilter apply:_findVeryGreenKernel, blurSampler, kCIApplyOptionDefinition, [sourceImage definition], nil];
+        CISampler *sourceSampler = [CISampler samplerWithImage:sourceImage];
+        CIImage *greenDetectImage = [detectGreenFilter apply:_findVeryGreenKernel, sourceSampler, kCIApplyOptionDefinition, [sourceImage definition], nil];
         
-        //NSLog(@"greenDetectImage = %@", greenDetectImage);
         [detectGreenFilter release];
         
         resultCIImage = greenDetectImage;
     }
 
     {
-        // The resultCIImage is a recipe for how to build the image, and if we stick this in the actual result NSImage (via NSCIImage), we get an error when drawing it.  My guess is that some portion of the recipe has been invalidated by the time this happens (some CoreVideo buffer maybe, based on where I hit the CG error).
-        // So, flatten the image immediately. Probably non-optimal, possibly a bug in CI/QT/CV/CG somewhere.
-
-#if 0        
-        NSCIImageRep *ciImageRep = [[NSCIImageRep alloc] initWithCIImage:resultCIImage];
-        
-        resultImage = [[NSImage alloc] initWithSize:[ciImageRep size]]; // LEAK
-        [resultImage addRepresentation:ciImageRep];
-        [ciImageRep release];
-#endif
-        
-        CIContext *ciContext = [CIContext contextWithCGContext:[[_window graphicsContext] graphicsPort] options:nil];
-        CGRect sourceRect = [resultCIImage extent];
-        CGImageRef resultCGImage = [ciContext createCGImage:resultCIImage fromRect:sourceRect];
-        
-        return resultCGImage;
-//        CIImage *resultImage = [CIImage imageWithCGImage:resultCGImage];
-//        CGImageRelease(resultCGImage);
-        
-        //NSLog(@"resultImage = %@", resultImage);
-//        return resultImage;
+        Bitmap *bitmap = BitmapCreateWithCIImage(resultCIImage);
+        BitmapDestroy(bitmap);
     }
+    
+    return resultCIImage;
 }
 
 @end
