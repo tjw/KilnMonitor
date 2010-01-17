@@ -22,3 +22,5 @@ extern void BitmapDestroy(Bitmap *bitmap);
 
 extern CGImageRef BitmapCopyImage(Bitmap *bitmap);
 extern BOOL BitmapWritePNG(Bitmap *bitmap, NSURL *url);
+
+extern NSPoint BitmapCenterOfBrightness(Bitmap *bitmap);

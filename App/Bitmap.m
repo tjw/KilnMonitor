@@ -74,3 +74,47 @@ BOOL BitmapWritePNG(Bitmap *bitmap, NSURL *url)
     CFRelease(dest);
     return result;
 }
+
+NSPoint BitmapCenterOfBrightness(Bitmap *bitmap)
+{
+    double tx = 0, ty = 0;
+    double tluma = 0;
+    for (size_t y = 0; y < bitmap->height; y++) {
+        for (size_t x = 0; x < bitmap->width; x++) {
+            const Pixel *p = &bitmap->pixels[y * bitmap->width + x];
+            double luma = 0.3 * p->r + 0.59 * p->g + 0.11*p->b;
+            
+            tx += luma * x;
+            ty += luma * y;
+            tluma += luma;
+        }
+    }
+    
+    NSPoint pt;
+    if (tluma == 0)
+        pt = NSMakePoint(bitmap->width/2, bitmap->height/2);
+    else {
+        double div = tluma;
+        pt = NSMakePoint(tx/div, ty/div);
+    }
+    
+    NSCAssert(pt.x >= 0, @"in bounds");
+    NSCAssert(pt.y >= 0, @"in bounds");
+    NSCAssert(pt.x < bitmap->width, @"in bounds");
+    NSCAssert(pt.y < bitmap->height, @"in bounds");
+    
+    return pt;
+}
+
+void BitmapSetPixel(Bitmap *bitmap, NSPoint pt, Pixel p)
+{
+    NSCAssert(pt.x >= 0, @"in bounds");
+    NSCAssert(pt.y >= 0, @"in bounds");
+    NSCAssert(pt.x < bitmap->width, @"in bounds");
+    NSCAssert(pt.y < bitmap->height, @"in bounds");
+    
+    size_t x = floor(pt.x);
+    size_t y = floor(pt.y);
+    Pixel *dest = &bitmap->pixels[y * bitmap->width + x];
+    *dest = p;
+}

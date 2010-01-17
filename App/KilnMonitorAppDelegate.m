@@ -100,6 +100,9 @@ static NSString * const ResultImageBinding = @"resultImage";
 
     {
         Bitmap *bitmap = BitmapCreateWithCIImage(resultCIImage);
+        NSPoint center = BitmapCenterOfBrightness(bitmap);
+        NSLog(@"center = %@", NSStringFromPoint(center));
+        BitmapSetPixel(bitmap, center, (Pixel){255, 255, 0, 0});
         BitmapWritePNG(bitmap, [NSURL fileURLWithPath:@"/tmp/foo.png"]);
         BitmapDestroy(bitmap);
     }
