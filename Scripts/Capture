@@ -1,0 +1,10 @@
+#!/bin/zsh -euf
+
+KILNCAM_URL=http://kilncam.local./jpg//image.jpg
+
+while true; do
+	DATE=`date "+%Y-%m-%dT%H:%M:%SZ%z"`
+	echo $DATE
+	curl --digest -u bungi:lOD7GIAz $KILNCAM_URL -o $DATE.jpg
+	sleep 15
+done
